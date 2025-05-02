@@ -56,7 +56,7 @@ export default function HabitTrackerApp() {
               exit={{ opacity: 0 }}
               className="space-y-8"
             >
-              <h2 className="text-2xl font-semibold">This Week's Progress</h2>
+              <h2 className="text-2xl font-semibold">This Week Progress</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {['sleep', 'water', 'screen'].map(habit => (
                   <div key={habit} className="bg-white rounded-xl p-4 shadow">
