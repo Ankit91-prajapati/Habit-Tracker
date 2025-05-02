@@ -1,102 +1,138 @@
-import Image from "next/image";
+"use client"
+import { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function Home() {
+export default function HabitTrackerApp() {
+ 
+  const [view, setView] = useState("home");
+  const [goals, setGoals] = useState({ sleep: 8, water: 2, screen: 3 });
+  const [logs, setLogs] = useState ({ sleep: 7, water: 1.5, screen: 4 });
+  const [streak, setStreak] = useState(5);
+
+  const data= [
+    { day: "Mon", sleep: 7, water: 1.5, screen: 3 },
+    { day: "Tue", sleep: 8, water: 2, screen: 4 },
+    { day: "Wed", sleep: 6.5, water: 1.8, screen: 5 },
+    { day: "Thu", sleep: 7.5, water: 2, screen: 2 },
+    { day: "Fri", sleep: 8, water: 2.1, screen: 3.5 },
+    { day: "Sat", sleep: 7, water: 1.7, screen: 4 },
+    { day: "Sun", sleep: 7.5, water: 2, screen: 3 },
+  ];
+
+  const handleLogChange = (key:string, value: number) => {
+    setLogs({ ...logs, [key]: value });
+    setStreak(prev => prev + 1); //  streak logic 
+  };
+
+  const tabs = ["Home", "Check-in", "Settings"];
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
+      <nav className="bg-blue-500 shadow p-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold">Habit Tracker</h1>
+        <div className="space-x-4">
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setView(tab.toLowerCase())}
+              className={`px-3 py-1 rounded-md ${
+                view === tab.toLowerCase() ? "bg-red-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
+      </nav>
+
+      <main className="p-4">
+        <AnimatePresence mode="wait">
+          {view === "home" && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-8"
+            >
+              <h2 className="text-2xl font-semibold">This Week's Progress</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {['sleep', 'water', 'screen'].map(habit => (
+                  <div key={habit} className="bg-white rounded-xl p-4 shadow">
+                    <h3 className="text-lg font-semibold capitalize">{habit} (goal: {goals[habit]}{habit === 'water' ? 'L' : 'h'})</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey={habit} stroke="#3b82f6" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center mt-8 text-lg">🔥 Current Streak: <span className="font-bold">{streak} days</span></div>
+            </motion.div>
+          )}
+
+          {view === "check-in" && (
+            <motion.div
+              key="checkin"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -100, opacity: 0 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-semibold">Daily Check-in</h2>
+              {Object.keys(logs).map(key => (
+                <div key={key} className="bg-white rounded-xl p-4 shadow">
+                  <label className="block text-sm font-medium capitalize mb-2">{key} ({logs[key]}{key === 'water' ? 'L' : 'h'})</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="{key === 'water' ? 5 : 12}"
+                    step="0.1"
+                    value={logs[key]}
+                    onChange={e => handleLogChange(key, parseFloat(e.target.value))}
+                    className="w-full accent-blue-500"
+                  />
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {view === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-semibold">Settings</h2>
+              {Object.keys(goals).map(key => (
+                <div key={key} className="bg-white rounded-xl p-4 shadow">
+                  <label className="block text-sm font-medium capitalize mb-2">{key} goal ({goals[key]}{key === 'water' ? 'L' : 'h'})</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="{key === 'water' ? 5 : 12}"
+                    step="0.1"
+                    value={goals[key]}
+                    onChange={e => setGoals({ ...goals, [key]: parseFloat(e.target.value) })}
+                    className="w-full accent-green-500"
+                  />
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="bg-white text-center py-4 shadow-inner mt-8">
+        <p className="text-sm text-gray-500">© 2025 . All rights reserved by Ankit prajapati.</p>
       </footer>
     </div>
   );
